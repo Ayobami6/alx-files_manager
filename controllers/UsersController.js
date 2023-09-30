@@ -10,7 +10,7 @@ class UsersController {
 
       const users = await dbClient.db.collection('users');
       const user = await users.findOne({ email });
-      if (user) return res.status(400).json({ error: 'Already exists' });
+      if (user) return res.status(400).json({ error: 'Already exist' });
 
       const hashedPassword = sha1(password);
       const result = await users.insertOne({
