@@ -28,6 +28,7 @@ class AuthController {
       `auth_${token}`,
       user._id.toString(),
       'EX',
+      // eslint-disable-next-line comma-dangle
       24 * 60 * 60
     );
     return res.status(200).json({ token });
