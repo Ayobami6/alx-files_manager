@@ -10,7 +10,7 @@ class AuthController {
       .toString()
       .split(':');
     // get users collection
-    const usersCollection = await dbClient.collection('users');
+    const usersCollection = await dbClient.db.collection('users');
     const hashedPassword = sha1(password);
     const user = await usersCollection.findOne({
       email,
