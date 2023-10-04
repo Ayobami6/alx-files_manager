@@ -42,7 +42,7 @@ class FilesController {
       //   get post data from request body
 
       const { name, type, parentId, data } = req.body;
-      const isPublic = !req.body.isPublic ? false : req.body.isPublic;
+      const isPublic = !!req.body.isPublic;
       const newData = {
         userId: user._id,
         name,
@@ -100,6 +100,66 @@ class FilesController {
     } catch (error) {
       console.log(error);
     }
+  }
+
+  static async getShow(req, res) {
+    const user = await FilesController.getUser(req);
+    if (!user) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+      });
+    }
+    const { id } = req.params;
+    const files = await dbClient.db.collection('files');
+    const objId = new ObjectID(id);
+    const file = await files.findOne({ _id: objId, userId: user._id });
+    if (!file) {
+      return res.status(404).json({
+        error: 'Not found',
+      });
+    }
+    const cleanedFile = { ...file, id: file._id.toString() };
+    delete cleanedFile._id;
+    return res.status(200).json(cleanedFile);
+  }
+
+  static async getIndex(req, res) {
+    const user = await FilesController.getUser(req);
+    if (!user) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+      });
+    }
+    const { parentId, page } = req.query;
+    const pageNum = parseInt(page, 10) || 0;
+    const files = await dbClient.db.collection('files');
+    const query = parentId
+      ? { userId: user._id, parentId: new ObjectID(parentId) }
+      : { userId: user._id };
+    files
+      .aggregate([
+        { $match: query },
+        { $sort: { _id: -1 } },
+        { $skip: pageNum * 20 },
+        { $limit: 20 },
+      ])
+      .toArray((err, result) => {
+        if (err) {
+          return res.status(500).json({
+            error: 'Not found',
+          });
+        }
+        const fileData = result.map((file) => {
+          const processedFile = {
+            ...file,
+            id: file._id.toString(),
+          };
+          delete processedFile.localPath;
+          delete processedFile._id;
+          return processedFile;
+        });
+        return res.status(200).json(fileData);
+      });
   }
 }
 
