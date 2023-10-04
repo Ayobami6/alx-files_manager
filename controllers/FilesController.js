@@ -1,3 +1,4 @@
+/* eslint-disable comma-dangle */
 /* eslint-disable object-curly-newline */
 /* eslint-disable consistent-return */
 import { ObjectID } from 'mongodb';
@@ -160,6 +161,73 @@ class FilesController {
         });
         return res.status(200).json(fileData);
       });
+  }
+
+  static async putPublish(req, res) {
+    try {
+      const user = await FilesController.getUser(req);
+      if (!user) {
+        return res.status(401).json({
+          error: 'Unauthorized',
+        });
+      }
+      const { id } = req.params;
+      const files = await dbClient.db.collection('files');
+      const objId = new ObjectID(id);
+      const file = await files.findOne({ _id: objId, userId: user._id });
+      const options = { returnOriginal: false };
+      if (!file) {
+        return res.status(404).json({
+          error: 'Not found',
+        });
+      }
+      if (file.isPublic) {
+        return res.status(400).json({
+          error: 'File is already public',
+        });
+      }
+      file.isPublic = true;
+      await files.updateOne(
+        { _id: objId, userId: user._id },
+        { $set: file },
+        options
+      );
+      return res.status(200).json(file);
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
+  static async putUnpublish(req, res) {
+    try {
+      const user = await FilesController.getUser(req);
+      if (!user) {
+        return res.status(401).json({
+          error: 'Unauthorized',
+        });
+      }
+      const { id } = req.params;
+      const files = await dbClient.db.collection('files');
+      const objId = new ObjectID(id);
+      const file = await files.findOne({ _id: objId, userId: user._id });
+      const options = { returnOriginal: false };
+      if (!file) {
+        return res.status(404).json({
+          error: 'Not found',
+        });
+      }
+      if (file.isPublic) {
+        file.isPublic = false;
+      }
+      await files.updateOne(
+        { _id: objId, userId: user._id },
+        { $set: file },
+        options
+      );
+      return res.status(200).json(file);
+    } catch (error) {
+      console.log(error.message);
+    }
   }
 }
 
