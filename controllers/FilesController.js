@@ -244,7 +244,7 @@ class FilesController {
       }
       if (file.isPublic) {
         if (file.type === 'folder') {
-          return res.status(404).json({
+          return res.status(400).json({
             error: "A folder doesn't have content",
           });
         }
@@ -258,13 +258,13 @@ class FilesController {
       } else {
         const user = await FilesController.getUser(req);
         if (!user) {
-          return res.status(401).json({
+          return res.status(404).json({
             error: 'Not found',
           });
         }
         if (file.userId.toString() === user._id.toString()) {
           if (file.type === 'folder') {
-            return res.status(404).json({
+            return res.status(400).json({
               error: "A folder doesn't have content",
             });
           }
@@ -281,12 +281,12 @@ class FilesController {
           console.log(
             `Wrong user: file.userId=${file.userId} userId=${user._id}`
           );
-          return res.status(401).json({ error: 'Unauthorized' });
+          return res.status(404).json({ error: 'Not found' });
         }
       }
     } catch (error) {
       console.log(error.message);
-      res.status(500).json({ error: 'Not found' });
+      res.status(404).json({ error: 'Not found' });
     }
   }
 }
