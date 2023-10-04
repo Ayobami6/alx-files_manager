@@ -5,8 +5,11 @@ import { ObjectID } from 'mongodb';
 import mime from 'mime-types';
 import fs from 'fs';
 import { v4 } from 'uuid';
+import Queue from 'bull';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
+
+const fileQueue = new Queue('fileQueue', 'redis://127.0.0.1:6379');
 
 class FilesController {
   static async getUser(req) {
@@ -83,8 +86,9 @@ class FilesController {
           });
         }
       }
+      let result;
       if (type === 'folder') {
-        const result = await files.insertOne({ ...newData });
+        result = await files.insertOne({ ...newData });
         res.status(201).json({ ...newData, id: result.insertedId });
       } else {
         const filePath = process.env.FOLDER_PATH || '/tmp/uploads';
@@ -99,6 +103,13 @@ class FilesController {
         });
         res.status(201).json({ ...newData, id: result.insertedId });
       }
+      if (type === 'image') {
+        fileQueue.add({
+          fileId: result.insertedId,
+          userId: user._id,
+        });
+      }
+      return null;
     } catch (error) {
       console.log(error);
     }
