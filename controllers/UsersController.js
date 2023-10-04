@@ -19,7 +19,6 @@ class UsersController {
         email,
         password: hashedPassword,
       });
-
       return res.status(201).json({ id: result.insertedId, email });
     } catch (error) {
       console.log(error);
@@ -40,7 +39,7 @@ class UsersController {
       if (!user) {
         return res.status(404).json({ error: 'Unauthorized' });
       }
-      return res.status(200).json({ id: user.id, email: user.email });
+      return res.status(200).json({ id: user._id, email: user.email });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ error: 'Internal server error' });

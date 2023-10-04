@@ -10,7 +10,7 @@ class AuthController {
       .toString('ascii')
       .split(':');
     // get users collection
-    console.log(email, password);
+    // console.log(email, password);
     const usersCollection = await dbClient.db.collection('users');
     const hashedPassword = sha1(password);
     const user = await usersCollection.findOne({
@@ -24,13 +24,7 @@ class AuthController {
       return res.status(401).json({ error: 'Unauthorized' });
     }
     const token = v4();
-    await redisClient.set(
-      `auth_${token}`,
-      user._id.toString(),
-      'EX',
-      // eslint-disable-next-line comma-dangle
-      24 * 60 * 60
-    );
+    await redisClient.set(`auth_${token}`, user._id.toString(), 60 * 60 * 24);
     return res.status(200).json({ token });
   }
 
