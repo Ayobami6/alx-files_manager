@@ -6,6 +6,7 @@ import fs from 'fs';
 import { v4 } from 'uuid';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
+import mime from 'mime-types';
 
 class FilesController {
   static async getUser(req) {
@@ -227,6 +228,65 @@ class FilesController {
       return res.status(200).json(file);
     } catch (error) {
       console.log(error.message);
+    }
+  }
+
+  static async getFile(req, res) {
+    try {
+      const { id, size } = req.params;
+      const idObject = new ObjectID(id);
+      const files = await dbClient.db.collection('files');
+      const file = await files.findOne({ _id: idObject });
+      if (!file) {
+        return res.status(404).json({
+          error: 'Not found',
+        });
+      }
+      if (file.isPublic) {
+        if (file.type === 'folder') {
+          return res.status(404).json({
+            error: "A folder doesn't have content",
+          });
+        }
+        let fileName = file.localPath;
+        if (size) {
+          fileName = `${file.localPath}_${size}`;
+        }
+        const data = await fs.promises.readFile(fileName);
+        const contentType = mime.contentType(fileName);
+        res.header('Content-Type', contentType).status(200).send(data);
+      } else {
+        const user = await FilesController.getUser(req);
+        if (!user) {
+          return res.status(401).json({
+            error: 'Not found',
+          });
+        }
+        if (file.userId.toString() === user._id.toString()) {
+          if (file.type === 'folder') {
+            return res.status(404).json({
+              error: "A folder doesn't have content",
+            });
+          }
+          let fileName = file.localPath;
+          if (size) {
+            fileName = `${file.localPath}_${size}`;
+          }
+          const contentType = mime.contentType(fileName);
+          res
+            .header('Content-Type', contentType)
+            .status(200)
+            .sendFile(fileName);
+        } else {
+          console.log(
+            `Wrong user: file.userId=${file.userId} userId=${user._id}`
+          );
+          return res.status(401).json({ error: 'Unauthorized' });
+        }
+      }
+    } catch (error) {
+      console.log(error.message);
+      res.status(500).json({ error: 'Not found' });
     }
   }
 }
