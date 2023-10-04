@@ -1,3 +1,5 @@
+/* eslint-disable object-curly-newline */
+/* eslint-disable consistent-return */
 import { ObjectID } from 'mongodb';
 import fs from 'fs';
 import { v4 } from 'uuid';
@@ -5,7 +7,7 @@ import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
 
 class FilesController {
-  static async getUser(req, res) {
+  static async getUser(req) {
     try {
       // get token from header
       const token = req.header('X-Token');
@@ -28,7 +30,7 @@ class FilesController {
 
   static async postUpload(req, res) {
     try {
-      const user = await FilesController.getUser(req, res);
+      const user = await FilesController.getUser(req);
       // send a json error if user is not found
       console.log(user);
       if (!user) {
