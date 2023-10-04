@@ -6,7 +6,7 @@
 /* eslint-disable prefer-arrow-callback */
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import dbClient from '../utils/db';
+import dbClient from '../../utils/db';
 
 describe('dbClient', function () {
   it('should connect to the database', function (done) {

@@ -7,7 +7,7 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { describe, it, before, after } from 'mocha';
-import redisClient from '../utils/redis';
+import redisClient from '../../utils/redis';
 
 describe('redisClient', function () {
   // Hook to run before tests
