@@ -2,11 +2,11 @@
 /* eslint-disable object-curly-newline */
 /* eslint-disable consistent-return */
 import { ObjectID } from 'mongodb';
+import mime from 'mime-types';
 import fs from 'fs';
 import { v4 } from 'uuid';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
-import mime from 'mime-types';
 
 class FilesController {
   static async getUser(req) {
